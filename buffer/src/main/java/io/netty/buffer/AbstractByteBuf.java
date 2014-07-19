@@ -15,10 +15,11 @@
  */
 package io.netty.buffer;
 
-import io.netty.util.IllegalReferenceCountException;
+import io.netty.util.ReferenceCountUtil;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.internal.PlatformDependent;
 import io.netty.util.internal.StringUtil;
+import io.netty.util.internal.SystemPropertyUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +35,7 @@ import java.nio.charset.Charset;
  * A skeletal implementation of a buffer.
  */
 public abstract class AbstractByteBuf extends ByteBuf {
+    private static final boolean ENSURE_ACCESS = SystemPropertyUtil.getBoolean("io.netty.buffer.ensureAccess", true);
 
     static final ResourceLeakDetector<ByteBuf> leakDetector = new ResourceLeakDetector<ByteBuf>(ByteBuf.class);
 
@@ -1190,8 +1192,8 @@ public abstract class AbstractByteBuf extends ByteBuf {
      * if the buffer was released before.
      */
     protected final void ensureAccessible() {
-        if (refCnt() == 0) {
-            throw new IllegalReferenceCountException(0);
+        if (ENSURE_ACCESS) {
+            ReferenceCountUtil.ensureAccessible(this);
         }
     }
 }
